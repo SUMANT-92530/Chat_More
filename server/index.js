@@ -1,5 +1,28 @@
 const express = require("express");
+const http = require('http');
+const { Server } = require("socket.io"); // Import the Server class from socket.io
+const cors = require("cors");
+
+const initializeSocket = require('./socketHandler'); // Import the handler
+
+// Create the Express app and the HTTP server
 const app = express();
+const server = http.createServer(app); // Create an HTTP server from the Express app
+
+// Initialize Socket.IO by passing it the server
+// We also configure CORS to allow connections from our front-end URL
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000", // Your frontend URL
+    methods: ["GET", "POST"]
+  }
+});
+
+// --- Initialize Socket.IO Logic ---
+initializeSocket(io); // Pass the 'io' instance to your handler
+
+// Make io accessible to our routes
+app.set('socketio', io); 
 
 // const userRoutes = require("../routes/User");
 // const profileRoutes = require("../routes/Profile");
@@ -10,7 +33,7 @@ const demoRoutes = require("./routes/demoRoutes");
 
 const database = require("./config/database");
 // const cookiesParser = require("cookie-parser");
-// const cors = require("cors");
+
 // const {cloudinartConnect} = require("./config/cloudinary");
 // const fileUpload = require("express-fileupload");
 const dotenv = require("dotenv");
@@ -24,12 +47,12 @@ database.connect();
 // middlewares
 app.use(express.json());  //middleware to parse json request body
 // app.use(cookiesParser());
-// app.use(
-//     cors({
-//         origin:"http://localhost:3000",
-//         credentials:true,
-//     })
-// )
+app.use(
+    cors({
+        origin:"http://localhost:3000",
+        credentials:true,
+    })
+)
 
 // app.use(
 //     fileUpload({
@@ -57,6 +80,6 @@ app.get("/", (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`App is running at port- ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Server is running at port- ${PORT}`);
 })
