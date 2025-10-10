@@ -1,0 +1,1 @@
+// This is the auth middleware to protect routes
